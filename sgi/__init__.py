@@ -32,11 +32,14 @@ __author__ = "Javier Marín"
 
 from .analysis import (
     EffectSizeResult,
+    compute_calibration,
     compute_cohens_d,
     compute_correlation_matrix,
     compute_effect_size,
     compute_pairwise_correlations,
     compute_roc_curve,
+    compute_stratified_analysis,
+    compute_subgroup_analysis,
     compute_topk_overlap,
 )
 from .data import (
@@ -83,6 +86,9 @@ __all__ = [
     "compute_pairwise_correlations",
     "compute_topk_overlap",
     "compute_roc_curve",
+    "compute_calibration",
+    "compute_stratified_analysis",
+    "compute_subgroup_analysis",
     "EffectSizeResult",
     # Visualization
     "set_publication_style",
