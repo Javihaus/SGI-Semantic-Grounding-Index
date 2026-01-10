@@ -10,7 +10,6 @@ readme = "README.md"
 license = {text = "APACHE}
 authors = [
     {name = "Javier Marín", email = "javier@jmarin.info"}
-    {name = "Cert framework", email = "info@cert-framework.com"}
 ]
 requires-python = ">=3.9"
 classifiers = [
