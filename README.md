@@ -141,32 +141,6 @@ Or run all cells:
 jupyter nbconvert --to notebook --execute 01_sgi_semantic_laziness.ipynb
 ```
 
-## Repository Structure
-
-```
-SEMANTIC_GROUNDING_INDEX/
-├── README.md
-├── pyproject.toml
-├── requirements.txt
-├── LICENSE
-│
-├── sgi/                           # Core library
-│   ├── __init__.py
-│   ├── metrics.py                 # SGI computation
-│   ├── analysis.py                # Statistical analysis, calibration
-│   ├── data.py                    # Dataset loaders
-│   └── visualization.py           # Plotting utilities
-│
-├── experiments/                   # Experiment notebooks
-│   ├── 01_sgi_semantic_laziness.ipynb
-│   ├── 02_cross_model_validation.ipynb
-│   └── 03_displacement_consistency.ipynb
-│
-├── results/                       # Pre-computed results
-│   └── [displacement geometry results by model]
-│
-└── tests/                         # Unit tests
-```
 
 ## Models Tested
 
