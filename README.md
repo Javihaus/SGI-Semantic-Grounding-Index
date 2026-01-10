@@ -2,7 +2,7 @@
 
 [![Tests](https://github.com/Javihaus/SEMANTIC_GROUNDING_INDEX/workflows/Tests/badge.svg)](https://github.com/Javihaus/SEMANTIC_GROUNDING_INDEX/actions)
 [![codecov](https://codecov.io/gh/Javihaus/SEMANTIC_GROUNDING_INDEX/branch/main/graph/badge.svg)](https://codecov.io/gh/Javihaus/SEMANTIC_GROUNDING_INDEX)
-[![Python 3.9+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![arXiv](https://img.shields.io/badge/arXiv-2512.13771-b31b1b.svg)](https://arxiv.org)
 
