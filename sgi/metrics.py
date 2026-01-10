@@ -38,7 +38,8 @@ class SGIResult:
 def normalize(v: np.ndarray, eps: float = 1e-10) -> np.ndarray:
     """L2 normalize a vector."""
     norm = np.linalg.norm(v)
-    return v / (norm + eps)
+    result: np.ndarray = v / (norm + eps)
+    return result
 
 
 def angular_distance(emb1: np.ndarray, emb2: np.ndarray, eps: float = 1e-10) -> float:

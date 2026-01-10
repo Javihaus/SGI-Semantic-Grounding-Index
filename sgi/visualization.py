@@ -152,7 +152,7 @@ def plot_sgi_distributions(
     if ax is None:
         _, ax = plt.subplots(figsize=(10, 6))
 
-    colors = plt.cm.tab10(np.linspace(0, 1, len(model_names)))
+    colors = plt.get_cmap("tab10")(np.linspace(0, 1, len(model_names)))
 
     for i, model_name in enumerate(model_names):
         sgi_col = f"sgi_{model_name}"
@@ -257,7 +257,7 @@ def plot_roc_curves(
     if ax is None:
         _, ax = plt.subplots(figsize=(8, 8))
 
-    colors = plt.cm.tab10(np.linspace(0, 1, len(roc_data)))
+    colors = plt.get_cmap("tab10")(np.linspace(0, 1, len(roc_data)))
 
     for (model_name, (fpr, tpr, auroc)), color in zip(roc_data.items(), colors):
         ax.plot(fpr, tpr, color=color, lw=2, label=f"{model_name} (AUC={auroc:.3f})")
@@ -268,8 +268,8 @@ def plot_roc_curves(
     ax.set_ylabel("True Positive Rate")
     ax.set_title(title)
     ax.legend(loc="lower right")
-    ax.set_xlim([0, 1])
-    ax.set_ylim([0, 1.02])
+    ax.set_xlim((0, 1))
+    ax.set_ylim((0, 1.02))
 
     return ax
 

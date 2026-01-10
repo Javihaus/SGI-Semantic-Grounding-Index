@@ -62,7 +62,7 @@ def compute_cohens_d(group1: np.ndarray, group2: np.ndarray) -> float:
     if pooled_std < 1e-10:
         return 0.0
 
-    return (group2.mean() - group1.mean()) / pooled_std
+    return float((group2.mean() - group1.mean()) / pooled_std)
 
 
 def compute_effect_size(
@@ -93,7 +93,7 @@ def compute_effect_size(
     _, p_value = stats.ttest_ind(hallucinated, grounded, equal_var=False)
 
     # AUROC (for detecting hallucinations)
-    y_true = (~labels).astype(int)  # 1 = hallucinated
+    y_true: np.ndarray = (~labels).astype(int)  # 1 = hallucinated
     if positive_class_is_hallucinated:
         auroc = roc_auc_score(y_true, values)
     else:
@@ -228,7 +228,7 @@ def compute_roc_curve(
     Returns:
         Tuple of (fpr, tpr, thresholds, auroc)
     """
-    y_true = (~labels).astype(int)  # 1 = hallucinated
+    y_true: np.ndarray = (~labels).astype(int)  # 1 = hallucinated
     y_scores = values if positive_class_is_hallucinated else -values
 
     fpr, tpr, thresholds = roc_curve(y_true, y_scores)
