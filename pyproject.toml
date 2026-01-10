@@ -7,9 +7,10 @@ name = "sgi-validation"
 version = "0.1.0"
 description = "Cross-model validation of the Semantic Grounding Index for hallucination detection"
 readme = "README.md"
-license = {text = "MIT"}
+license = {text = "APACHE}
 authors = [
-    {name = "Javier Marín", email = "javier@cert-framework.com"}
+    {name = "Javier Marín", email = "javier@jmarin.info"}
+    {name = "Cert framework", email = "info@cert-framework.com"}
 ]
 requires-python = ">=3.9"
 classifiers = [
@@ -50,7 +51,7 @@ notebook = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/cert-framework/sgi-validation"
+"Homepage" = "https://cert-framework.com/"
 "Paper" = "https://arxiv.org/abs/2512.13771"
 
 [tool.setuptools.packages.find]
