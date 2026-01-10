@@ -5,7 +5,7 @@ Publication-quality figures for cross-model validation experiments.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -327,4 +327,151 @@ def create_summary_figure(
     if save_path:
         fig.savefig(save_path, dpi=300, bbox_inches="tight", facecolor="white")
 
+    return fig
+
+
+def plot_calibration(
+    calibration_data: Tuple[float, np.ndarray, np.ndarray, np.ndarray],
+    ax: Optional[plt.Axes] = None,
+    figsize: Tuple[float, float] = (10, 4),
+) -> plt.Figure:
+    """
+    Plot calibration curve (reliability diagram) and hallucination rate by decile.
+
+    Paper Figure 5 shows:
+    - Reliability diagram with ECE = 0.10
+    - Monotonic hallucination rate by SGI decile
+
+    Args:
+        calibration_data: Tuple of (ece, bin_accuracies, bin_confidences, bin_counts)
+                         as returned by compute_calibration()
+        ax: Optional axes (creates figure if None)
+        figsize: Figure size if creating new figure
+
+    Returns:
+        Figure object
+    """
+    ece, bin_accuracies, bin_confidences, bin_counts = calibration_data
+
+    if ax is None:
+        fig, axes = plt.subplots(1, 2, figsize=figsize)
+    else:
+        fig = ax.figure
+        axes = [ax, ax]
+
+    # Left: Reliability diagram
+    ax1 = axes[0]
+    ax1.plot([0, 1], [0, 1], "k--", label="Perfect calibration", alpha=0.7)
+    ax1.plot(
+        bin_confidences,
+        bin_accuracies,
+        "o-",
+        label=f"SGI (ECE={ece:.3f})",
+        color="#2E86AB",
+        markersize=8,
+    )
+    ax1.fill_between(bin_confidences, bin_confidences, bin_accuracies, alpha=0.2, color="#2E86AB")
+    ax1.set_xlabel("Mean Predicted Probability")
+    ax1.set_ylabel("Fraction of Positives (Actual Halluc. Rate)")
+    ax1.set_title("Calibration Curve (Reliability Diagram)")
+    ax1.legend(loc="lower right")
+    ax1.set_xlim([0, 1])
+    ax1.set_ylim([0, 1])
+    ax1.set_aspect("equal")
+
+    # Right: Hallucination rate by decile
+    ax2 = axes[1]
+    n_bins = len(bin_accuracies)
+    x = np.arange(1, n_bins + 1)
+
+    ax2.bar(x, bin_accuracies, color="#E94F37", alpha=0.7, label="Actual Halluc Rate")
+    ax2.plot(x, bin_confidences, "o-", color="#2E86AB", label="Predicted Prob", markersize=6)
+
+    ax2.set_xlabel(f"SGI Decile (1=lowest SGI, {n_bins}=highest SGI)")
+    ax2.set_ylabel("Hallucination Rate / Probability")
+    ax2.set_title("Hallucination Rate by SGI Decile")
+    ax2.legend()
+    ax2.set_ylim([0, 1.1])
+
+    # Add annotation for semantic laziness
+    if len(bin_accuracies) > 0:
+        ax2.annotate(
+            "Low SGI = High halluc rate\n(semantic laziness)",
+            xy=(1.5, bin_accuracies[0] if bin_accuracies[0] > 0 else 0.8),
+            fontsize=8,
+            ha="left",
+        )
+
+    plt.tight_layout()
+    return fig
+
+
+def plot_stratified_effect_sizes(
+    stratified_df: pd.DataFrame,
+    x_col: str = "stratum",
+    figsize: Tuple[float, float] = (10, 4),
+) -> plt.Figure:
+    """
+    Plot effect size and AUROC by stratum.
+
+    Paper Figure 3 shows monotonic increase with θ(q,c).
+
+    Args:
+        stratified_df: Output from compute_stratified_analysis()
+                      Must have columns: stratum, cohens_d, auroc
+        x_col: Column for x-axis categories
+        figsize: Figure size
+
+    Returns:
+        Figure object
+    """
+    fig, axes = plt.subplots(1, 2, figsize=figsize)
+
+    x = stratified_df[x_col]
+
+    # Left: Cohen's d
+    ax1 = axes[0]
+    bars1 = ax1.bar(x, stratified_df["cohens_d"], color="#2E86AB", alpha=0.8)
+    ax1.axhline(y=0.8, color="gray", linestyle="--", alpha=0.5, label="Large effect (d=0.8)")
+    ax1.set_ylabel("Cohen's d")
+    ax1.set_title("Effect Size Increases with\nQuestion-Context Separation")
+
+    # Add value labels
+    for bar, val in zip(bars1, stratified_df["cohens_d"]):
+        ax1.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.02,
+            f"{val:.2f}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            fontweight="bold",
+        )
+
+    ax1.set_xlabel("θ(q,c) Tercile")
+    ax1.legend()
+
+    # Right: AUROC
+    ax2 = axes[1]
+    bars2 = ax2.bar(x, stratified_df["auroc"], color="#E94F37", alpha=0.8)
+    ax2.axhline(y=0.5, color="gray", linestyle="--", alpha=0.5, label="Random (AUC=0.5)")
+    ax2.set_ylabel("ROC-AUC")
+    ax2.set_title("Classification Performance by\nQuestion-Context Separation")
+
+    for bar, val in zip(bars2, stratified_df["auroc"]):
+        ax2.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.01,
+            f"{val:.3f}",
+            ha="center",
+            va="bottom",
+            fontsize=10,
+            fontweight="bold",
+        )
+
+    ax2.set_xlabel("θ(q,c) Tercile")
+    ax2.set_ylim([0.4, 1.0])
+    ax2.legend()
+
+    plt.tight_layout()
     return fig
