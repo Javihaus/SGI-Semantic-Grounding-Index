@@ -33,6 +33,7 @@ sgi-validation/
 │   └── visualization.py         # Publication-quality figures
 ├── experiments/
 │   └── cross_model_validation.ipynb  # Main experiment notebook
+├── results
 ├── requirements.txt
 └── README.md
 ```
