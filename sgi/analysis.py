@@ -258,13 +258,13 @@ def compute_calibration(
     scores_norm = (scores - scores_min) / (scores_max - scores_min + 1e-8)
 
     # Convert labels: 1 = hallucinated (positive class for calibration)
-    y_true = (~labels).astype(int)
+    y_true: np.ndarray = (~labels).astype(int)
 
     # Create bins
     bin_boundaries = np.linspace(0, 1, n_bins + 1)
     bin_accuracies = np.zeros(n_bins)
     bin_confidences = np.zeros(n_bins)
-    bin_counts = np.zeros(n_bins, dtype=int)
+    bin_counts: np.ndarray = np.zeros(n_bins, dtype=int)
 
     for i in range(n_bins):
         # Handle last bin edge case
