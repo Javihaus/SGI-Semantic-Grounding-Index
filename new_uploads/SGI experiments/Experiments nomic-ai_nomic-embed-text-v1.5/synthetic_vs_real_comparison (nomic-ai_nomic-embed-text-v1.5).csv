@@ -1,0 +1,5 @@
+Method,Synthetic AUROC,Real AUROC,Δ (degradation)
+Displacement Consistency,1.0,1.0,0.0
+Expected Response Dev.,1.0,1.0,0.0
+Tangent Space Residual,0.9978871754316594,0.99085625,0.007030925431659396
+LSGI,0.758525022779239,0.719430367867868,0.039094654911371096
