@@ -237,6 +237,181 @@ def compute_roc_curve(
     return fpr, tpr, thresholds, auroc
 
 
+def compute_calibration(
+    scores: np.ndarray,
+    labels: np.ndarray,
+    n_bins: int = 10,
+) -> Tuple[float, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute Expected Calibration Error (ECE).
+
+    Args:
+        scores: Prediction scores (e.g., SGI values)
+        labels: Binary labels (True = grounded, False = hallucinated)
+        n_bins: Number of calibration bins
+
+    Returns:
+        Tuple of (ece, bin_accuracies, bin_confidences, bin_counts)
+    """
+    # Normalize scores to [0, 1] - higher score = more likely hallucinated
+    scores_min, scores_max = scores.min(), scores.max()
+    scores_norm = (scores - scores_min) / (scores_max - scores_min + 1e-8)
+
+    # Convert labels: 1 = hallucinated (positive class for calibration)
+    y_true = (~labels).astype(int)
+
+    # Create bins
+    bin_boundaries = np.linspace(0, 1, n_bins + 1)
+    bin_accuracies = np.zeros(n_bins)
+    bin_confidences = np.zeros(n_bins)
+    bin_counts = np.zeros(n_bins, dtype=int)
+
+    for i in range(n_bins):
+        # Handle last bin edge case
+        if i == n_bins - 1:
+            mask = (scores_norm >= bin_boundaries[i]) & (scores_norm <= bin_boundaries[i + 1])
+        else:
+            mask = (scores_norm >= bin_boundaries[i]) & (scores_norm < bin_boundaries[i + 1])
+
+        bin_counts[i] = mask.sum()
+        if bin_counts[i] > 0:
+            bin_accuracies[i] = y_true[mask].mean()
+            bin_confidences[i] = scores_norm[mask].mean()
+        else:
+            bin_confidences[i] = (bin_boundaries[i] + bin_boundaries[i + 1]) / 2
+
+    # Compute ECE (weighted average of |accuracy - confidence|)
+    total = bin_counts.sum()
+    if total > 0:
+        ece = sum(
+            (count / total) * abs(acc - conf)
+            for acc, conf, count in zip(bin_accuracies, bin_confidences, bin_counts)
+            if count > 0
+        )
+    else:
+        ece = 0.0
+
+    return float(ece), bin_accuracies, bin_confidences, bin_counts
+
+
+def compute_stratified_analysis(
+    df: pd.DataFrame,
+    stratify_col: str,
+    sgi_col: str = "sgi",
+    label_col: str = "is_grounded",
+    n_bins: int = 3,
+) -> pd.DataFrame:
+    """
+    Compute effect sizes stratified by a continuous variable.
+
+    Args:
+        df: DataFrame with SGI scores and labels
+        stratify_col: Column to stratify by (e.g., 'theta_qc')
+        sgi_col: Column name for SGI scores
+        label_col: Column name for grounding labels
+        n_bins: Number of strata (default: 3 for terciles)
+
+    Returns:
+        DataFrame with effect sizes per stratum
+    """
+    # Create strata labels
+    stratum_labels = ["Low", "Medium", "High"] if n_bins == 3 else [f"Q{i+1}" for i in range(n_bins)]
+    df = df.copy()
+    df["stratum"] = pd.qcut(df[stratify_col], n_bins, labels=stratum_labels, duplicates="drop")
+
+    results = []
+    for stratum in df["stratum"].unique():
+        subset = df[df["stratum"] == stratum]
+
+        grounded = subset[subset[label_col]][sgi_col].values
+        hallucinated = subset[~subset[label_col]][sgi_col].values
+
+        if len(grounded) < 2 or len(hallucinated) < 2:
+            continue
+
+        d = compute_cohens_d(hallucinated, grounded)
+
+        # AUROC for detecting hallucinations (higher SGI = more likely hallucinated)
+        y_true = (~subset[label_col]).astype(int).values
+        try:
+            auroc = roc_auc_score(y_true, subset[sgi_col].values)
+        except ValueError:
+            auroc = 0.5
+
+        results.append(
+            {
+                "stratum": stratum,
+                "n": len(subset),
+                "range_min": float(subset[stratify_col].min()),
+                "range_max": float(subset[stratify_col].max()),
+                "sgi_grounded": float(grounded.mean()),
+                "sgi_hallucinated": float(hallucinated.mean()),
+                "cohens_d": float(d),
+                "auroc": float(auroc),
+            }
+        )
+
+    return pd.DataFrame(results)
+
+
+def compute_subgroup_analysis(
+    df: pd.DataFrame,
+    feature_col: str,
+    sgi_col: str = "sgi",
+    label_col: str = "is_grounded",
+    n_bins: int = 3,
+) -> pd.DataFrame:
+    """
+    Compute effect sizes for subgroups defined by a feature.
+
+    Args:
+        df: DataFrame with SGI scores, labels, and feature column
+        feature_col: Column to create subgroups from
+        sgi_col: Column name for SGI scores
+        label_col: Column name for grounding labels
+        n_bins: Number of subgroups
+
+    Returns:
+        DataFrame with effect sizes per subgroup
+    """
+    subgroup_labels = ["Short", "Medium", "Long"] if n_bins == 3 else [f"G{i+1}" for i in range(n_bins)]
+    df = df.copy()
+    df["subgroup"] = pd.qcut(df[feature_col], n_bins, labels=subgroup_labels, duplicates="drop")
+
+    results = []
+    for subgroup in df["subgroup"].unique():
+        subset = df[df["subgroup"] == subgroup]
+
+        grounded = subset[subset[label_col]][sgi_col].values
+        hallucinated = subset[~subset[label_col]][sgi_col].values
+
+        if len(grounded) < 2 or len(hallucinated) < 2:
+            continue
+
+        d = compute_cohens_d(hallucinated, grounded)
+
+        y_true = (~subset[label_col]).astype(int).values
+        try:
+            auroc = roc_auc_score(y_true, subset[sgi_col].values)
+        except ValueError:
+            auroc = 0.5
+
+        results.append(
+            {
+                "subgroup": subgroup,
+                "feature": feature_col,
+                "n": len(subset),
+                "feature_mean": float(subset[feature_col].mean()),
+                "sgi_grounded": float(grounded.mean()),
+                "sgi_hallucinated": float(hallucinated.mean()),
+                "cohens_d": float(d),
+                "auroc": float(auroc),
+            }
+        )
+
+    return pd.DataFrame(results)
+
+
 def summarize_cross_model_validation(
     effect_sizes: Dict[str, EffectSizeResult],
     pearson_corr: Dict[str, float],

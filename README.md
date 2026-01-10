@@ -1,34 +1,86 @@
-# SGI Cross-Model Validation
-
+# Semantic Grounding Index (SGI)
 
 [![Tests](https://github.com/Javihaus/SEMANTIC_GROUNDING_INDEX/workflows/Tests/badge.svg)](https://github.com/Javihaus/SEMANTIC_GROUNDING_INDEX/actions)
 [![codecov](https://codecov.io/gh/Javihaus/SEMANTIC_GROUNDING_INDEX/branch/main/graph/badge.svg)](https://codecov.io/gh/Javihaus/SEMANTIC_GROUNDING_INDEX)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-
-Empirical validation that the Semantic Grounding Index (SGI) captures a property of text rather than artifacts of specific embedding geometries.
+Geometric methods for hallucination detection in RAG systems, based on angular relationships in embedding space.
 
 ## Research Question
 
-> Does SGI measure something fundamental about language model outputs, or is it an artifact of particular embedding spaces?
+> Does the angular geometry of embeddings reveal when language models disengage from source context?
 
-We answer this by computing SGI across five embedding architectures with different training regimes and dimensionalities. If the signal is real, it should be consistent across models.
+We answer this by computing the **Semantic Grounding Index (SGI)**, which measures relative angular proximity of responses to questions versus contexts.
 
-## Key Finding
+## Key Finding: Semantic Laziness
 
-**SGI scores correlate at r=0.85 across five embedding architectures.**
+Hallucinated responses exhibit **semantic laziness** — they remain angularly proximate to questions rather than departing toward contexts. This manifests as higher SGI scores for hallucinations.
 
-This suggests the "semantic laziness" pattern—where hallucinations remain angularly proximate to questions rather than traveling toward context—is a property of the text itself, not an artifact of any single embedding space.
+## Results
 
+### Main Finding: Cross-Model Effect Sizes (Table 1)
+
+On HaluEval QA (n=5,000), SGI achieves strong discrimination:
+
+| Model | SGI (Valid) | SGI (Halluc) | Cohen's d | AUROC |
+|-------|-------------|--------------|-----------|-------|
+| mpnet | 1.142 | 0.921 | +0.92 | 0.776 |
+| minilm | 1.203 | 0.856 | +1.28 | 0.824 |
+| bge | 1.231 | 0.948 | +1.27 | 0.823 |
+| e5 | 1.138 | 0.912 | +1.03 | 0.794 |
+| gte | 1.224 | 0.927 | +1.13 | 0.811 |
+| **Mean** | **1.188** | **0.913** | **+1.13** | **0.806** |
+
+### Cross-Model Robustness
+
+Five embedding models with distinct architectures agree on SGI scores with:
+- **Pearson r = 0.85** (linear agreement)
+- **Spearman ρ = 0.87** (ranking agreement)
+
+This indicates SGI captures a property of text, not an artifact of embedding geometry.
+
+### Triangle Inequality Confirmation (Table 2)
+
+Effect size increases monotonically with question-context separation θ(q,c):
+
+| θ(q,c) Tercile | Cohen's d | AUROC |
+|----------------|-----------|-------|
+| Low | +0.61 | 0.721 |
+| Medium | +0.90 | 0.768 |
+| High | +1.27 | 0.832 |
+
+### Operational Boundaries (Table 3)
+
+SGI excels on:
+- Long responses (d = 2.05)
+- Short questions (d = 1.22)
+
+SGI fails on:
+- TruthfulQA (AUC = 0.478) — angular geometry cannot discriminate factual accuracy
+
+### Calibration
+
+Expected Calibration Error (ECE) = 0.10, indicating SGI scores can serve as probability estimates for risk stratification.
+
+### Displacement Consistency (AUROC ~0.98-1.0)
+
+Advanced trajectory-based methods achieve near-perfect discrimination:
+
+| Method | Cross-Domain AUROC | Within-Domain AUROC |
+|--------|-------------------|---------------------|
+| Displacement Consistency | 1.0 | 1.0 |
+| Expected Response Dev. | 1.0 | 1.0 |
+| Displacement Magnitude | 0.9999 | 0.9998 |
+| Tangent Space Residual | 0.9990 | 0.9961 |
+| LSGI (Local SGI) | 0.914 | 0.807 |
 
 ## Installation
 
 ```bash
-git clone https://github.com/yourusername/sgi-validation.git
-cd sgi-validation
-pip install -r requirements.txt
-python -m spacy download en_core_web_sm
+git clone https://github.com/Javihaus/SEMANTIC_GROUNDING_INDEX.git
+cd SEMANTIC_GROUNDING_INDEX
+pip install -e .
 ```
 
 ## Quick Start
@@ -48,7 +100,7 @@ for case in cases:
     q_emb = encoder.encode(case.question)
     c_emb = encoder.encode(case.context)
     r_emb = encoder.encode(case.response)
-    
+
     result = compute_sgi(q_emb, c_emb, r_emb)
     print(f"SGI: {result.sgi:.3f}, Grounded: {case.is_grounded}")
 ```
@@ -66,6 +118,56 @@ Where:
 - SGI > 1: Response closer to question than context (potentially hallucinated)
 - SGI ≈ 1: Equidistant (ambiguous)
 
+## Experiments
+
+This repository contains three main experiment notebooks:
+
+| Notebook | Description |
+|----------|-------------|
+| `01_sgi_semantic_laziness.ipynb` | Main paper experiments (Tables 1-5, Figures 2-5) |
+| `02_cross_model_validation.ipynb` | Cross-model robustness validation (n=5,000) |
+| `03_displacement_consistency.ipynb` | Displacement geometry experiments (AUROC ~0.98) |
+
+### Running Experiments
+
+```bash
+cd experiments
+jupyter notebook 01_sgi_semantic_laziness.ipynb
+```
+
+Or run all cells:
+
+```bash
+jupyter nbconvert --to notebook --execute 01_sgi_semantic_laziness.ipynb
+```
+
+## Repository Structure
+
+```
+SEMANTIC_GROUNDING_INDEX/
+├── README.md
+├── pyproject.toml
+├── requirements.txt
+├── LICENSE
+│
+├── sgi/                           # Core library
+│   ├── __init__.py
+│   ├── metrics.py                 # SGI computation
+│   ├── analysis.py                # Statistical analysis, calibration
+│   ├── data.py                    # Dataset loaders
+│   └── visualization.py           # Plotting utilities
+│
+├── experiments/                   # Experiment notebooks
+│   ├── 01_sgi_semantic_laziness.ipynb
+│   ├── 02_cross_model_validation.ipynb
+│   └── 03_displacement_consistency.ipynb
+│
+├── results/                       # Pre-computed results
+│   └── [displacement geometry results by model]
+│
+└── tests/                         # Unit tests
+```
+
 ## Models Tested
 
 | Model | Dimension | Source |
@@ -76,57 +178,27 @@ Where:
 | `e5-base-v2` | 768 | Microsoft |
 | `gte-base` | 768 | Alibaba |
 
-## Validation Tests
-
-1. **Effect Size Consistency**: Cohen's d significant across all models
-2. **Cross-Model Correlation**: Pearson r between SGI scores from different models
-3. **Ranking Agreement**: Spearman ρ for sample rankings
-4. **Top-K Overlap**: Jaccard similarity of flagged samples
-5. **Component Analysis**: Which angular distance drives the signal
-
-## Running the Experiment
-
-```bash
-cd experiments
-jupyter notebook cross_model_validation.ipynb
-```
-
-Or run all cells:
-
-```bash
-jupyter nbconvert --to notebook --execute cross_model_validation.ipynb
-```
-
-## Results
-
-Typical results on HaluEval QA (500 samples):
-
-| Metric | Value |
-|--------|-------|
-| Models with significant effect (p<0.05) | 5/5 |
-| Mean Cohen's d | ~0.35 |
-| Mean AUROC | ~0.65 |
-| Mean Pearson r (cross-model) | ~0.85 |
-| Mean Spearman ρ (ranking agreement) | ~0.85 |
-
 ## Limitations
 
-- SGI alone achieves moderate AUROC (~0.65-0.70); stronger performance requires ensemble methods
-- Cross-domain transfer fails: models trained on one domain don't generalize
+- SGI measures **topical engagement**, not factual accuracy
 - Requires source context; not applicable to open-domain generation
+- Performance varies with response length and question-context separation
+- Cross-domain transfer requires revalidation
 
 ## Reference
 
 ```bibtex
 @misc{marín2025semanticgroundingindexgeometric,
-      title={Semantic Grounding Index: Geometric Bounds on Context Engagement in RAG Systems}, 
+      title={Semantic Grounding Index: Geometric Bounds on Context Engagement in RAG Systems},
       author={Javier Marín},
       year={2025},
       eprint={2512.13771},
       archivePrefix={arXiv},
       primaryClass={cs.AI},
-      url={https://arxiv.org/abs/2512.13771}, 
+      url={https://arxiv.org/abs/2512.13771},
 }
 ```
 
+## License
 
+Apache 2.0
