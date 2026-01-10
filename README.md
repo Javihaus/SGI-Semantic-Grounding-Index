@@ -21,22 +21,6 @@ We answer this by computing SGI across five embedding architectures with differe
 
 This suggests the "semantic laziness" pattern—where hallucinations remain angularly proximate to questions rather than traveling toward context—is a property of the text itself, not an artifact of any single embedding space.
 
-## Repository Structure
-
-```
-sgi-validation/
-├── sgi/                          # Core library
-│   ├── __init__.py              # Package exports
-│   ├── metrics.py               # SGI computation (angular distances)
-│   ├── data.py                  # Dataset loaders (HaluEval, TruthfulQA)
-│   ├── analysis.py              # Statistical tests (effect sizes, correlations)
-│   └── visualization.py         # Publication-quality figures
-├── experiments/
-│   └── cross_model_validation.ipynb  # Main experiment notebook
-├── results
-├── requirements.txt
-└── README.md
-```
 
 ## Installation
 
@@ -134,15 +118,15 @@ Typical results on HaluEval QA (500 samples):
 ## Reference
 
 ```bibtex
-@article{marin2024sgi,
-  title={Semantic Grounding Index: Geometric Hallucination Detection 
-         via Angular Distance Ratios in Embedding Space},
-  author={Mar{\'\i}n, Javier},
-  journal={arXiv preprint arXiv:2512.13771},
-  year={2024}
+@misc{marín2025semanticgroundingindexgeometric,
+      title={Semantic Grounding Index: Geometric Bounds on Context Engagement in RAG Systems}, 
+      author={Javier Marín},
+      year={2025},
+      eprint={2512.13771},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI},
+      url={https://arxiv.org/abs/2512.13771}, 
 }
 ```
 
-## License
 
-MIT
