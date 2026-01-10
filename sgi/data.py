@@ -54,7 +54,7 @@ def load_halueval_qa(
 
     dataset = load_dataset("pminervini/HaluEval", "qa_samples", split="data")
 
-    cases = []
+    cases: List[TestCase] = []
     for i, item in enumerate(dataset):
         if max_samples and len(cases) >= max_samples:
             break
@@ -110,7 +110,7 @@ def load_halueval_dialogue(
 
     dataset = load_dataset("pminervini/HaluEval", "dialogue_samples", split="data")
 
-    cases = []
+    cases: List[TestCase] = []
     for i, item in enumerate(dataset):
         if max_samples and len(cases) >= max_samples:
             break
@@ -167,7 +167,7 @@ def load_truthfulqa(
 
     dataset = load_dataset("truthful_qa", "generation", split="validation")
 
-    cases = []
+    cases: List[TestCase] = []
     for i, item in enumerate(dataset):
         if max_samples and len(cases) >= max_samples:
             break
@@ -210,7 +210,7 @@ def get_dataset_stats(cases: List[TestCase]) -> Dict:
     """Get summary statistics for a dataset."""
     grounded = sum(1 for c in cases if c.is_grounded)
     hallucinated = len(cases) - grounded
-    sources = {}
+    sources: Dict[str, int] = {}
     for c in cases:
         sources[c.source] = sources.get(c.source, 0) + 1
 
