@@ -7,7 +7,7 @@ name = "sgi-validation"
 version = "0.1.0"
 description = "Cross-model validation of the Semantic Grounding Index for hallucination detection"
 readme = "README.md"
-license = {text = "APACHE}
+license = {text = "APACHE 2.0"}
 authors = [
     {name = "Javier Marín", email = "javier@jmarin.info"}
 ]
