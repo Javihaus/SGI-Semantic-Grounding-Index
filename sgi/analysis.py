@@ -315,7 +315,9 @@ def compute_stratified_analysis(
         DataFrame with effect sizes per stratum
     """
     # Create strata labels
-    stratum_labels = ["Low", "Medium", "High"] if n_bins == 3 else [f"Q{i+1}" for i in range(n_bins)]
+    stratum_labels = (
+        ["Low", "Medium", "High"] if n_bins == 3 else [f"Q{i+1}" for i in range(n_bins)]
+    )
     df = df.copy()
     df["stratum"] = pd.qcut(df[stratify_col], n_bins, labels=stratum_labels, duplicates="drop")
 
@@ -374,7 +376,9 @@ def compute_subgroup_analysis(
     Returns:
         DataFrame with effect sizes per subgroup
     """
-    subgroup_labels = ["Short", "Medium", "Long"] if n_bins == 3 else [f"G{i+1}" for i in range(n_bins)]
+    subgroup_labels = (
+        ["Short", "Medium", "Long"] if n_bins == 3 else [f"G{i+1}" for i in range(n_bins)]
+    )
     df = df.copy()
     df["subgroup"] = pd.qcut(df[feature_col], n_bins, labels=subgroup_labels, duplicates="drop")
 
