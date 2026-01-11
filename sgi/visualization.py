@@ -5,7 +5,7 @@ Publication-quality figures for cross-model validation experiments.
 """
 
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, cast
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -356,7 +356,7 @@ def plot_calibration(
     if ax is None:
         fig, axes = plt.subplots(1, 2, figsize=figsize)
     else:
-        fig = ax.figure
+        fig = cast(plt.Figure, ax.figure)
         axes = [ax, ax]
 
     # Left: Reliability diagram

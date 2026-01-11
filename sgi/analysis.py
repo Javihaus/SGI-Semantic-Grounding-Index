@@ -6,7 +6,7 @@ for hallucination detection experiments.
 """
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import pandas as pd
@@ -420,7 +420,7 @@ def compute_component_analysis(
     theta_rq: np.ndarray,
     theta_rc: np.ndarray,
     labels: np.ndarray,
-) -> Dict[str, float]:
+) -> Dict[str, Union[float, str]]:
     """
     Decompose SGI signal into θ(r,q) and θ(r,c) components.
 
