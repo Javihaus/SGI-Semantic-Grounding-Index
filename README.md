@@ -14,13 +14,13 @@ Geometric methods for hallucination detection in RAG systems, based on angular r
 
 We answer this by computing the **Semantic Grounding Index (SGI)**, which measures relative angular proximity of responses to questions versus contexts.
 
-## Key Finding: Semantic Laziness
+## Semantic Laziness
 
 Hallucinated responses exhibit **semantic laziness** — they remain angularly proximate to questions rather than departing toward contexts. This manifests as higher SGI scores for hallucinations.
 
 ## Results
 
-### Main Finding: Cross-Model Effect Sizes (Table 1)
+### Cross-Model Effect Sizes (Table 1)
 
 On HaluEval QA (n=5,000), SGI achieves strong discrimination:
 
