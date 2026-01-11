@@ -34,6 +34,7 @@ from .analysis import (
     EffectSizeResult,
     compute_calibration,
     compute_cohens_d,
+    compute_component_analysis,
     compute_correlation_matrix,
     compute_effect_size,
     compute_pairwise_correlations,
@@ -58,11 +59,13 @@ from .metrics import (
 )
 from .visualization import (
     create_summary_figure,
+    plot_calibration,
     plot_correlation_heatmap,
     plot_effect_sizes,
     plot_roc_curves,
     plot_scatter_comparison,
     plot_sgi_distributions,
+    plot_stratified_effect_sizes,
     set_publication_style,
 )
 
@@ -82,6 +85,7 @@ __all__ = [
     # Analysis
     "compute_effect_size",
     "compute_cohens_d",
+    "compute_component_analysis",
     "compute_correlation_matrix",
     "compute_pairwise_correlations",
     "compute_topk_overlap",
@@ -97,5 +101,7 @@ __all__ = [
     "plot_sgi_distributions",
     "plot_scatter_comparison",
     "plot_roc_curves",
+    "plot_calibration",
+    "plot_stratified_effect_sizes",
     "create_summary_figure",
 ]

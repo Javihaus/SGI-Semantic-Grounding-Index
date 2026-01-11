@@ -416,6 +416,47 @@ def compute_subgroup_analysis(
     return pd.DataFrame(results)
 
 
+def compute_component_analysis(
+    theta_rq: np.ndarray,
+    theta_rc: np.ndarray,
+    labels: np.ndarray,
+) -> Dict[str, float]:
+    """
+    Decompose SGI signal into θ(r,q) and θ(r,c) components.
+
+    Paper Table 5 shows semantic laziness is driven by θ(r,q):
+    - d(θ_rq) ≈ 1.50 (hallucinations closer to questions)
+    - d(θ_rc) ≈ 0.40 (weaker signal from context distance)
+
+    Args:
+        theta_rq: Angular distances from response to question
+        theta_rc: Angular distances from response to context
+        labels: Boolean array (True = grounded)
+
+    Returns:
+        Dictionary with effect sizes for each component:
+        - d_theta_rq: Cohen's d for θ(r,q) component
+        - d_theta_rc: Cohen's d for θ(r,c) component
+        - primary_driver: 'theta_rq' or 'theta_rc'
+        - ratio: Absolute ratio of d_theta_rq to d_theta_rc
+    """
+    grounded_mask = labels
+
+    d_theta_rq = compute_cohens_d(theta_rq[grounded_mask], theta_rq[~grounded_mask])
+
+    d_theta_rc = compute_cohens_d(theta_rc[grounded_mask], theta_rc[~grounded_mask])
+
+    # Determine primary driver
+    primary = "theta_rq" if abs(d_theta_rq) > abs(d_theta_rc) else "theta_rc"
+
+    return {
+        "d_theta_rq": float(d_theta_rq),
+        "d_theta_rc": float(d_theta_rc),
+        "primary_driver": primary,
+        "ratio": float(abs(d_theta_rq) / (abs(d_theta_rc) + 1e-8)),
+    }
+
+
 def summarize_cross_model_validation(
     effect_sizes: Dict[str, EffectSizeResult],
     pearson_corr: Dict[str, float],
